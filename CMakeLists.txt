@@ -31,7 +31,7 @@ message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 set(SOURCE_FILES
         src/main.cpp
         src/OpenCVVideoSource.cpp
-        include/OpenCVVideoSource.hpp
+        src/AsciiConverter.cpp
 )
 
 # 添加可执行文件
