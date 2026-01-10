@@ -1,5 +1,7 @@
 .idea
 cmake-build-*
-source_video
+
+docs
+resources
 img
 

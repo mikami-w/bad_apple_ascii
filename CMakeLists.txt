@@ -30,6 +30,8 @@ message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 # 源文件列表
 set(SOURCE_FILES
         src/main.cpp
+        src/OpenCVVideoSource.cpp
+        include/OpenCVVideoSource.hpp
 )
 
 # 添加可执行文件
