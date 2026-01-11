@@ -7,9 +7,9 @@
 class BadAppleApp
 {
 public:
-    BadAppleApp(int video_width = 160)
+    explicit BadAppleApp(int video_width = 120)
         : BadAppleApp("./resources/ba_video.mp4", "./resources/ba_audio.wav", video_width) {}
-    BadAppleApp(std::string video_path, std::string audio_path, int video_width = 160)
+    BadAppleApp(std::string video_path, std::string audio_path, int video_width = 120)
         : m_video_width(video_width), m_video_path(std::move(video_path)), m_audio_path(std::move(audio_path)) {}
     ~BadAppleApp() = default;
 

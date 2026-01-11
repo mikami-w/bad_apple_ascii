@@ -85,7 +85,7 @@ namespace App
         m_renderer->initialize();
 
         // ascii转换器
-        int console_width = 120;
+        int console_width = m_video_width;
         int console_height = (console_width * m_video->get_height() / m_video->get_width()) >> 1;
         m_converter.set_scale(console_width, console_height);
 
