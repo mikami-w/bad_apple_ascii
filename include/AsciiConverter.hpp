@@ -28,7 +28,7 @@ namespace Graphics
         // 字符集：从暗(0)到亮(255)
         static constexpr std::array<char, 256> m_lut = []() -> std::array<char, 256>
         {
-            constexpr char ASCII_PALETTE[] = " .:-=+*#%@" ;
+            constexpr char ASCII_PALETTE[] = " .:-=+*#%@";
             constexpr int PALETTE_SIZE = std::size(ASCII_PALETTE) - 1; // 不包括终止符
             std::array<char, 256> lut{}; // constexpr 函数不允许未初始化的变量, 故必须进行初始化，否则无法在编译期计算
 
