@@ -90,8 +90,25 @@ namespace IO
         ma_result res = ma_sound_get_cursor_in_seconds(&m_sound, &cursor_seconds);
         if (res != ma_result::MA_SUCCESS)
             return 0;
+        std::int64_t app_time_ms = static_cast<std::int64_t>(cursor_seconds * 1000.0f);
 
-        return std::int64_t(cursor_seconds * 1000.0f);
+        // 获取设备延迟
+        ma_device* p_device = ma_engine_get_device(const_cast<ma_engine*>(&m_engine));
+        ma_uint32 sample_rate = p_device->sampleRate;
+
+        ma_uint32 period_size = p_device->playback.internalPeriodSizeInFrames;
+        ma_uint32 periods = p_device->playback.internalPeriods;
+        ma_uint32 latency_frames = period_size * periods;
+
+        std::int64_t latency_ms = 0;
+        if (sample_rate > 0)
+        {
+            latency_ms = (static_cast<int64_t>(latency_frames) * 1000) / sample_rate;
+        }
+
+        int64_t real_time_ms = app_time_ms - latency_ms;
+
+        return (real_time_ms > 0) ? real_time_ms : 0;
     }
 }
 

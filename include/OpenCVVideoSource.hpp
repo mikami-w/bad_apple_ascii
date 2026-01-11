@@ -2,7 +2,6 @@
 #define BAD_APPLE_ASCII_OPENCVVIDEOSOURCE_HPP
 
 #include "Common.hpp"
-#include "Stopwatch.hpp"
 #include "IVideoSource.hpp"
 
 #include <opencv2/opencv.hpp>
@@ -25,14 +24,15 @@ namespace IO
         [[nodiscard]] int get_height() const override { return m_height; }
         [[nodiscard]] double get_fps() const override { return m_fps;}
         [[nodiscard]] int get_frame_count() const override { return m_frame_count; }
-        [[nodiscard]] int get_current_frame_index() const override { return m_capture.get(cv::CAP_PROP_POS_FRAMES); }
+        [[nodiscard]] int get_current_frame_index() const override { return m_frame_cursor; }
 
     private:
         cv::VideoCapture m_capture;
+        int m_frame_cursor = 0; // 当前帧
         int m_width = 0;
         int m_height = 0;
         double m_fps = 0.0;
-        int m_frame_count = 0;
+        int m_frame_count = 0; // 总帧数
     };
 
 }

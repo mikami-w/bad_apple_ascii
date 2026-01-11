@@ -36,6 +36,7 @@ namespace IO
 
         cv::Mat frame;
         m_capture.read(frame);
+        ++m_frame_cursor;
 
         if (frame.empty())
         {
