@@ -44,6 +44,11 @@ set(SOURCE_FILES
         include/AudioPlayer.hpp
 )
 
+if(WIN32)
+    # 在 Windows 下添加资源文件
+    list(APPEND SOURCE_FILES res/icon.rc)
+endif()
+
 # 添加可执行文件
 add_executable(bad_apple_ascii ${SOURCE_FILES})
 
