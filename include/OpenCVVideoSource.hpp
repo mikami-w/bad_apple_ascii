@@ -24,7 +24,8 @@ namespace IO
         [[nodiscard]] int get_width() const override { return m_width; }
         [[nodiscard]] int get_height() const override { return m_height; }
         [[nodiscard]] double get_fps() const override { return m_fps;}
-        [[nodiscard]] int get_frame_count() const override { return m_frame_count;}
+        [[nodiscard]] int get_frame_count() const override { return m_frame_count; }
+        [[nodiscard]] int get_current_frame_index() const override { return m_capture.get(cv::CAP_PROP_POS_FRAMES); }
 
     private:
         cv::VideoCapture m_capture;

@@ -34,6 +34,7 @@ set(SOURCE_FILES
         src/AsciiConverter.cpp
         src/LinuxRenderer.cpp
         src/WindowsRenderer.cpp
+        src/AsciiPlayer.cpp
 )
 
 # 添加可执行文件

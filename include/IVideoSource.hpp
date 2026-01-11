@@ -26,6 +26,7 @@ namespace IO
         [[nodiscard]] virtual int get_height() const = 0;
         [[nodiscard]] virtual double get_fps() const = 0;
         [[nodiscard]] virtual int get_frame_count() const = 0;
+        [[nodiscard]] virtual int get_current_frame_index() const = 0;
     };
 }
 
