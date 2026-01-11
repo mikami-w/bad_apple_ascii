@@ -22,9 +22,10 @@ namespace IO
 
         [[nodiscard]] virtual std::optional<cv::Mat> next_frame() = 0;
 
-        [[nodiscard]] virtual unsigned get_width() const = 0;
-        [[nodiscard]] virtual unsigned get_height() const = 0;
+        [[nodiscard]] virtual int get_width() const = 0;
+        [[nodiscard]] virtual int get_height() const = 0;
         [[nodiscard]] virtual double get_fps() const = 0;
+        [[nodiscard]] virtual int get_frame_count() const = 0;
     };
 }
 

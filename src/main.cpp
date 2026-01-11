@@ -1,41 +1,65 @@
 #include "AsciiConverter.hpp"
+#include "OpenCVVideoSource.hpp"
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <thread>
 
+#ifdef _WIN32
+#include <windows.h>
+void reset_cursor()
+{
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD pos{0, 0};
+    SetConsoleCursorPosition(hOut, pos);
+}
+#else
+void reset_cursor()
+{
+    std::cout << "\033[H";
+}
+#endif
+
+
 int main(int argc, char* argv[])
 {
     std::cout << "OpenCV Version: " << CV_VERSION << std::endl;
 
-    // 读取图片（请确保路径下有这张图，或者换成存在的图片）
-    cv::Mat img = cv::imread("../img/hina.jpg");
+    using namespace BadApple;
 
-    if (img.empty()) {
-        std::cerr << "Could not open or find the image" << std::endl;
-        // 容错：造一个渐变图测试
-        img = cv::Mat(480, 640, CV_8UC1);
-        for(int i=0; i<img.rows; ++i)
-            for(int j=0; j<img.cols; ++j)
-                img.at<uchar>(i,j) = (i+j) % 256;
+    auto video = std::make_unique<IO::OpenCVVideoSource>();
+    Graphics::AsciiConverter converter;
+
+    if (!video->open("../resources/ba_video.mp4"))
+    {
+        std::cerr << "Failed to open video stream." << std::endl;
+        return 1;
     }
 
-    std::thread t([&img]
+    if (video->get_width() == 0)
     {
-        cv::imshow("Hina", img);
-        cv::waitKey(0);
-    });
+        std::cerr << "Video Stream Width Error: width = 0." << std::endl;
+        return 2;
+    }
 
+    int width = 160;
+    int height = (width * video->get_height() / video->get_width()) >> 1;
+    converter.set_scale(width, height);
 
-    BadApple::Graphics::AsciiConverter converter(132, 100);
-    // 转换
-    std::string art = converter.convert(img);
+    for (;;)
+    {
+        auto frame = video->next_frame();
+        if (!frame.has_value())
+        {
+            break;
+        }
 
-    // 打印
-    std::cout << "========= BEGIN FRAME =========" << std::endl;
-    std::cout << art << std::endl;
-    std::cout << "========= END FRAME =========" << std::endl;
+        std::string ascii_art = converter.convert(frame.value());
+        reset_cursor();
+        std::cout << ascii_art;
 
-    t.join();
+        std::this_thread::sleep_for(std::chrono::milliseconds(33));
+    }
+
     return 0;
 }
