@@ -3,9 +3,9 @@
 
 #include "Common.hpp"
 #include "AsciiConverter.hpp"
+#include "AudioPlayer.hpp"
 #include "OpenCVVideoSource.hpp"
 #include "Renderer.hpp"
-#include "Stopwatch.hpp"
 
 #include <string>
 #include <memory>
@@ -16,24 +16,26 @@ namespace App
     class AsciiPlayer
     {
     public:
-        AsciiPlayer(std::string video_path, std::string audio_path)
-            : m_video_path(std::move(video_path)), m_audio_path(std::move(audio_path)) {}
+        AsciiPlayer(std::string video_path, std::string audio_path, int video_width = 160)
+            : m_video_width(video_width), m_video_path(std::move(video_path)), m_audio_path(std::move(audio_path)) {}
         ~AsciiPlayer() = default;
 
         void run();
 
     private:
         void init_modules();
-        void play_audio_async();
 
     private:
+        int m_video_width;
+
         std::string m_video_path;
         std::string m_audio_path;
 
         std::unique_ptr<IO::IVideoSource> m_video;
         std::unique_ptr<View::IRenderer> m_renderer;
         Graphics::AsciiConverter m_converter;
-        Core::Stopwatch m_stopwatch;
+
+        IO::AudioPlayer m_audio_player;
     };
 }
 

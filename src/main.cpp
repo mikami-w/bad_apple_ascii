@@ -7,18 +7,19 @@
 class BadAppleApp
 {
 public:
-    BadAppleApp()
-        : BadAppleApp("../resources/ba_video.mp4", "../resources/ba_audio.webm") {}
-    BadAppleApp(std::string video_path, std::string audio_path)
-        : m_video_path(std::move(video_path)), m_audio_path(std::move(audio_path)) {}
+    BadAppleApp(int video_width = 160)
+        : BadAppleApp("../resources/ba_video.mp4", "../resources/ba_audio.wav", video_width) {}
+    BadAppleApp(std::string video_path, std::string audio_path, int video_width = 160)
+        : m_video_width(video_width), m_video_path(std::move(video_path)), m_audio_path(std::move(audio_path)) {}
     ~BadAppleApp() = default;
 
     void run()
     {
-        BadApple::App::AsciiPlayer app(m_video_path, m_audio_path);
+        BadApple::App::AsciiPlayer app(m_video_path, m_audio_path, m_video_width);
         app.run();
     }
 private:
+    int m_video_width;
     std::string m_video_path;
     std::string m_audio_path;
 };

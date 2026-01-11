@@ -21,12 +21,17 @@ namespace App
         double fps = m_video->get_fps();
 
         // start
-        play_audio_async();
-        m_stopwatch.start();
+        m_audio_player.play();
 
         for (;;)
         {
-            auto elapsed_ms = m_stopwatch.elapsed();
+            auto elapsed_ms = m_audio_player.get_time_ms();
+            if (!m_audio_player.is_playing() && elapsed_ms > 1000)
+            {
+                // 防止刚开始播放的假状态
+                std::cout << "Playback finished." << std::endl;
+                break;
+            }
 
             // 计算目标帧
             int target_frame = static_cast<int>(fps * elapsed_ms / 1000.0);
@@ -83,18 +88,12 @@ namespace App
         int console_width = 120;
         int console_height = (console_width * m_video->get_height() / m_video->get_width()) >> 1;
         m_converter.set_scale(console_width, console_height);
-    }
 
-    void AsciiPlayer::play_audio_async()
-    {
-#ifdef __linux__
-        std::string cmd = "./ffplay -nodisp -autoexit -loglevel quiet \"" + m_audio_path + "\" > /dev/null 2>&1 &";
-#endif
-#ifdef _WIN32
-        std::string cmd = "start /B .\\ffplay.exe -nodisp -autoexit -loglevel quiet \"" + m_audio_path + "\"";
-#endif
-
-        (void)std::system(cmd.c_str());
+        // 音频播放器
+        if (!m_audio_player.load(m_audio_path))
+        {
+            throw std::runtime_error("Failed to load audio file: " + m_audio_path);
+        }
     }
 }
 NAMESPACE_BAD_APPLE_END

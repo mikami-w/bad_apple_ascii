@@ -29,12 +29,16 @@ message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # 源文件列表
 set(SOURCE_FILES
+        libs/miniaudio/miniaudio.c
+
         src/main.cpp
         src/OpenCVVideoSource.cpp
         src/AsciiConverter.cpp
         src/LinuxRenderer.cpp
         src/WindowsRenderer.cpp
         src/AsciiPlayer.cpp
+        src/AudioPlayer.cpp
+        include/AudioPlayer.hpp
 )
 
 # 添加可执行文件
@@ -42,6 +46,7 @@ add_executable(bad_apple_ascii ${SOURCE_FILES})
 
 # 包含头文件路径
 target_include_directories(bad_apple_ascii PRIVATE
+        libs/miniaudio
         ${CMAKE_SOURCE_DIR}/include
         ${OpenCV_INCLUDE_DIRS}
 )
