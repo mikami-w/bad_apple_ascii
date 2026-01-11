@@ -5,6 +5,8 @@
 #include <iostream>
 #include <thread>
 
+#include "Renderer.hpp"
+
 #ifdef _WIN32
 #include <windows.h>
 void reset_cursor()
@@ -28,6 +30,7 @@ int main(int argc, char* argv[])
     using namespace BadApple;
 
     auto video = std::make_unique<IO::OpenCVVideoSource>();
+    auto renderer = View::create_renderer();
     Graphics::AsciiConverter converter;
 
     if (!video->open("../resources/ba_video.mp4"))
@@ -35,6 +38,8 @@ int main(int argc, char* argv[])
         std::cerr << "Failed to open video stream." << std::endl;
         return 1;
     }
+
+    if (renderer) renderer->initialize();
 
     if (video->get_width() == 0)
     {
@@ -56,7 +61,9 @@ int main(int argc, char* argv[])
 
         std::string ascii_art = converter.convert(frame.value());
         reset_cursor();
-        std::cout << ascii_art;
+
+        if (renderer)
+            renderer->render(ascii_art);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(33));
     }

@@ -32,6 +32,8 @@ set(SOURCE_FILES
         src/main.cpp
         src/OpenCVVideoSource.cpp
         src/AsciiConverter.cpp
+        src/LinuxRenderer.cpp
+        src/WindowsRenderer.cpp
 )
 
 # 添加可执行文件
