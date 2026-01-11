@@ -1,5 +1,9 @@
 .idea
 cmake-build-*
+build
+release
+deploy
+BadApple_*.*
 
 docs
 resources
