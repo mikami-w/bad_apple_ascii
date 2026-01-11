@@ -15,6 +15,12 @@ else ()
     add_compile_options(-Wall)
 endif ()
 
+if(WIN32)
+    # 设置 opencv 路径
+    set(OpenCV_DIR "D:/libs/opencv/mingw_install")
+    set(OPENCV_BIN_DIR "D:/libs/opencv/mingw_build/bin")
+endif()
+
 find_package(OpenCV REQUIRED)
 
 # 打印 OpenCV 信息（可选, 用于调试）
@@ -60,63 +66,73 @@ endif()
 
 # 构建后自动复制资源到构建目录
 add_custom_command(TARGET bad_apple_ascii POST_BUILD
-        # 创建 resources 文件夹
         COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:bad_apple_ascii>/resources"
-        # 复制内容到 resources 文件夹内
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/resources"
         "$<TARGET_FILE_DIR:bad_apple_ascii>/resources"
-        COMMENT "Copying resources to build directory structure..."
+        COMMENT "Copying resources for development..."
 )
 
-# 发布部署
+# 发布部署 (Install 逻辑)
 
-# 安装可执行文件 -> 到根目录 (.)
-install(TARGETS bad_apple_ascii
-        RUNTIME DESTINATION .
-)
+# 安装二进制文件
+install(TARGETS bad_apple_ascii RUNTIME DESTINATION .)
 
-# 安装资源文件 -> 到 resources 子目录
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/resources/"
-        DESTINATION resources
-        FILES_MATCHING PATTERN "*.*"
-)
+# 安装资源 (保持 resources 目录结构)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/resources/" DESTINATION resources)
 
-# 自动抓取并安装依赖 (DLLs/SOs) -> 到根目录 (.)
-install(CODE [[
-    # 设置搜索路径
-    set(OPENCV_BIN_DIR "")
-    if(WIN32)
-        set(OPENCV_BIN_DIR "D:/libs/opencv/mingw_build/bin")
+# 依赖处理
+if(WIN32)
+    # 找到并安装 opencv_videoio_ffmpeg DLL
+    # 使用 GLOB 模糊匹配，这样版本号变了也能找到 (例如 4120, 480 等)
+    file(GLOB FFMPEG_DLL "${OPENCV_BIN_DIR}/opencv_videoio_ffmpeg*.dll")
+
+    if(FFMPEG_DLL)
+        message(STATUS "Found FFmpeg DLL: ${FFMPEG_DLL}")
+        install(FILES ${FFMPEG_DLL} DESTINATION .)
+    else()
+        message(WARNING "Could not find opencv_videoio_ffmpeg DLL in ${OPENCV_BIN_DIR}")
     endif()
 
-    # 自动分析依赖
-    file(GET_RUNTIME_DEPENDENCIES
-        EXECUTABLES $<TARGET_FILE:bad_apple_ascii>
-        RESOLVED_DEPENDENCIES_VAR _r_deps
-        UNRESOLVED_DEPENDENCIES_VAR _u_deps
-        DIRECTORIES ${OPENCV_BIN_DIR}
-        POST_EXCLUDE_REGEXES ".*system32/.*" "^/lib" "^/usr/lib"
-    )
+    # 动态获取编译器的 bin 目录
+    get_filename_component(COMPILER_BIN_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    # 把 CMake 变量传递给 Install 脚本
+    install(CODE "set(COMPILER_BIN_DIR \"${COMPILER_BIN_DIR}\")")
+    install(CODE "set(OPENCV_BIN_DIR \"${OPENCV_BIN_DIR}\")")
 
-    # 复制依赖库
-    foreach(_file ${_r_deps})
-        if(WIN32)
+    # 自动抓取其他隐式依赖 (opencv_world, libstdc++ 等)
+    install(CODE [[
+        # 打印路径 (调试用)
+        message(STATUS "Searching for DLLs in:")
+        message(STATUS "   > Compiler: ${COMPILER_BIN_DIR}")
+        message(STATUS "   > OpenCV:   ${OPENCV_BIN_DIR}")
+
+        file(GET_RUNTIME_DEPENDENCIES
+            EXECUTABLES $<TARGET_FILE:bad_apple_ascii>
+            RESOLVED_DEPENDENCIES_VAR _r_deps
+            UNRESOLVED_DEPENDENCIES_VAR _u_deps
+            # 把编译器目录加入搜索列表
+            DIRECTORIES "${OPENCV_BIN_DIR}" "${COMPILER_BIN_DIR}"
+            POST_EXCLUDE_REGEXES ".*system32/.*"
+        )
+
+        foreach(_file ${_r_deps})
+            # 只复制 DLL
             if(_file MATCHES "\.dll$")
-                message(STATUS "Deploying DLL: ${_file}")
-                # [修改] 目标路径改为根目录 (之前是 bin)
-                file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}" TYPE SHARED_LIBRARY FILES "${_file}")
+                # 排除已经手动复制的 ffmpeg dll，防止冲突
+                if(NOT _file MATCHES "opencv_videoio_ffmpeg")
+                    message(STATUS "Deploying Dependency: ${_file}")
+                    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}" TYPE SHARED_LIBRARY FILES "${_file}")
+                endif()
             endif()
-        else()
-            if(_file MATCHES "\.so")
-                message(STATUS "Deploying Lib: ${_file}")
-                # [修改] 目标路径改为根目录
-                file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}" TYPE SHARED_LIBRARY FILES "${_file}")
-            endif()
-        endif()
-    endforeach()
+        endforeach()
 
-    if(_u_deps)
-        message(WARNING "Unresolved dependencies: ${_u_deps}")
-    endif()
-]])
+        if(_u_deps)
+            message(WARNING "Unresolved dependencies: ${_u_deps}")
+        endif()
+    ]])
+
+elseif(UNIX AND NOT APPLE)
+    # --- Linux 策略 ---
+    message(STATUS "Linux deployment: Relying on system libraries")
+endif()
